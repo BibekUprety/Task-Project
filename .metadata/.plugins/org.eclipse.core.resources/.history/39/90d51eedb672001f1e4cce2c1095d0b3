@@ -1,0 +1,135 @@
+package menu;
+
+import java.util.ArrayList;
+import java.util.InputMismatchException;
+import java.util.List;
+import java.util.Scanner;
+
+public class Menu {
+
+    public static void main(String[] args) {
+        // Initialize menu categories and dishes
+        List<Category> menu = createMenu();
+
+        // Initialize scanner for user input
+        Scanner scanner = new Scanner(System.in);
+        List<String> orderItems = new ArrayList<>();
+        List<Integer> orderQuantities = new ArrayList<>();
+        List<Double> orderSubtotals = new ArrayList<>();
+        boolean isOrdering = true;
+
+        // Main loop
+        while (isOrdering) {
+            System.out.println("Choose an option:");
+            System.out.println("1 - Show Menu");
+            System.out.println("2 - Exit");
+            int option = scanner.nextInt();
+            scanner.nextLine(); // consume newline
+
+            if (option == 2) {
+                break;
+            } else if (option == 1) {
+                // Show categories
+                System.out.println("Categories:");
+                for (int i = 0; i < menu.size(); i++) {
+                    System.out.println((i + 1) + ". " + menu.get(i).getName());
+                }
+                System.out.print("Choose a category: ");
+                int categoryIndex = scanner.nextInt() - 1;
+                scanner.nextLine(); // consume newline
+
+                if (categoryIndex >= 0 && categoryIndex < menu.size()) {
+                    Category chosenCategory = menu.get(categoryIndex);
+                    // Show dishes in the chosen category
+                    System.out.println("Dishes in " + chosenCategory.getName() + ":");
+                    List<Dish> dishes = chosenCategory.getDishes();
+                    for (int i = 0; i < dishes.size(); i++) {
+                        Dish dish = dishes.get(i);
+                        System.out.println((i + 1) + ". " + dish.getName() + " - " + dish.getDescription() + " ($" + dish.getPrice() + ")");
+                    }
+                    System.out.print("Choose a dish: ");
+                    int dishIndex = scanner.nextInt() - 1;
+                    scanner.nextLine(); // consume newline
+
+                    if (dishIndex >= 0 && dishIndex < dishes.size()) {
+                        Dish chosenDish = dishes.get(dishIndex);
+                        int quantity = 0;
+                        while (true) {
+                            System.out.print("Enter quantity: ");
+                            try {
+                                quantity = scanner.nextInt();
+                                if (quantity > 0) {
+                                    break;
+                                } else {
+                                    System.out.println("Please enter a positive number.");
+                                }
+                            } catch (InputMismatchException e) {
+                                System.out.println("Invalid input. Please enter a number.");
+                                scanner.next(); // consume invalid input
+                            }
+                        }
+
+                        // Add to order
+                        double subtotal = chosenDish.getPrice() * quantity;
+                        orderItems.add(chosenDish.getName());
+                        orderQuantities.add(quantity);
+                        orderSubtotals.add(subtotal);
+
+                        // Continue or finish ordering
+                        System.out.print("Do you want to continue ordering? (yes/no): ");
+                        scanner.nextLine(); // consume newline
+                        String continueOrdering = scanner.nextLine();
+                        if (continueOrdering.equalsIgnoreCase("no")) {
+                            isOrdering = false;
+                        }
+                    }
+                }
+            } else {
+                System.out.println("Invalid option. Please choose 1 or 2.");
+            }
+        }
+
+        // Print invoice
+        printInvoice(orderItems, orderQuantities, orderSubtotals);
+        scanner.close();
+    }
+
+    private static List<Category> createMenu() {
+        List<Category> menu = new ArrayList<>();
+
+        // Create categories
+        Category appetisers = new Category("Appetisers");
+        Category mainDishes = new Category("Main Dishes");
+        Category friedRice = new Category("Fried Rice");
+
+        // Add dishes to categories
+        appetisers.addDish(new Dish("Spring Rolls", "Crispy rolls filled with vegetables and sweet chili sauce.", 6.00));
+        appetisers.addDish(new Dish("Thai Dumplings", "Steamed dumplings with chicken and vegetable filling.", 7.50));
+
+        mainDishes.addDish(new Dish("Pad Thai", "Stir-fried rice noodles with shrimp, tofu, peanuts, and bean sprouts.", 12.00));
+        mainDishes.addDish(new Dish("Basil Chicken", "Stir-fried chicken with Thai basil, chili, and vegetables, served with jasmine rice.", 12.00));
+
+        friedRice.addDish(new Dish("Thai Fried Rice", "Fried rice with chicken, shrimp, or vegetables, seasoned with Thai spices.", 11.00));
+        friedRice.addDish(new Dish("Pineapple Fried Rice", "Fried rice with pineapple, cashews, and choice of meat or tofu.", 12.50));
+
+        // Add categories to menu
+        menu.add(appetisers);
+        menu.add(mainDishes);
+        menu.add(friedRice);
+
+        return menu;
+    }
+
+    private static void printInvoice(List<String> items, List<Integer> quantities, List<Double> subtotals) {
+        System.out.println("\nINVOICE");
+        System.out.println("Dish\t\tQuantity\tSubtotal");
+        double total = 0;
+
+        for (int i = 0; i < items.size(); i++) {
+            System.out.printf("%-15s %5d %10.2f%n", items.get(i), quantities.get(i), subtotals.get(i));
+            total += subtotals.get(i);
+        }
+
+        System.out.printf("Total: $%.2f%n", total);
+    }
+}

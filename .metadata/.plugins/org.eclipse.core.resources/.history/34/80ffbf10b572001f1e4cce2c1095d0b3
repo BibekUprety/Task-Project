@@ -1,0 +1,8 @@
+package task;
+
+public class BankingSimulation {
+
+	public static void main() {
+		
+	}
+}
